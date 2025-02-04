@@ -1,3 +1,4 @@
+ï»¿using System;
 using System.DirectoryServices.ActiveDirectory;
 using val_type = double;
 
@@ -8,7 +9,8 @@ namespace ExerciceRecapTP2
 
         public val_type val1 = 0;
         public val_type val2 = 0;
-        public int decim = -1;
+        public int decim1 = -1;
+        public int decim2 = -1;
         public int selectedVal = 1;
         public char op = ' ';
         public val_type MEMORY = 0;
@@ -17,6 +19,7 @@ namespace ExerciceRecapTP2
         public Form1()
         {
             InitializeComponent();
+            txtAffichage.Text = "  _\r\n? _";
         }
 
         private String repeatStr(String str, int n)
@@ -30,35 +33,37 @@ namespace ExerciceRecapTP2
 
         private String parseVal(val_type valRaw)
         {
-            float val = (float) valRaw;
+            float val = (float)valRaw;
             return val.ToString();
         }
 
 
-        // Afficher les opérations et les valeurs en "FLOAT" pour éviter
+        // Afficher les opÃ©rations et les valeurs en "FLOAT" pour Ã©viter
         // les erreurs de virgules comme : 2.3 = 2.30000000004
         private void updateAffichage()
         {
             if (selectedVal == 1)
             {
-                txtAffichage.Text = parseVal(val1);
+                txtAffichage.Text = "  " + parseVal(val1) + "\r\n" + (op == ' ' ? '?' : op) + " _";
+                //txtAffichage.Text = parseVal(val1);
             }
             else
             {
-                txtAffichage.Text = "  "+ parseVal(val1) + "\r\n" + op + " " + parseVal(val2);
+                txtAffichage.Text = "  " + parseVal(val1) + "\r\n" + op + " " + parseVal(val2);
             }
         }
 
-        // Ajoute un chiffre à la suite, sans utiliser de chaines de
-        // caractères
+        // Ajoute un chiffre Ã  la suite, sans utiliser de chaines de
+        // caractÃ¨res
         private void appendNumber(int n)
         {
             val_type val = (selectedVal == 1 ? val1 : val2);
+            int decim = (selectedVal == 1 ? decim1 : decim2);
             if (decim == -1)
                 val = val * 10 + (val < 0 ? -n : n);
             else
             {
-                val = val + (val_type) Math.Pow(10, -(decim + 1)) * (val < 0 ? -n : n);
+                val = val + (val_type)Math.Pow(10, -(decim + 1)) * (val < 0 ? -n : n);
                 decim++;
             }
 
@@ -67,11 +72,16 @@ namespace ExerciceRecapTP2
             else
                 val2 = val;
 
+            if (selectedVal == 1)
+                decim1 = decim;
+            else
+                decim2 = decim;
+
             updateAffichage();
         }
 
-        // Ajoute un opérateur, et si l'opérateur
-        // a déjà été ajouté une fois, effectue l'ancien
+        // Ajoute un opÃ©rateur, et si l'opÃ©rateur
+        // a dÃ©jÃ  Ã©tÃ© ajoutÃ© une fois, effectue l'ancien
         // calcul avant de passer au nouveau
         private void operation(char c)
         {
@@ -85,14 +95,15 @@ namespace ExerciceRecapTP2
             {
                 op = c;
                 updateAffichage();
+                val2 = 0;
                 selectedVal = 2;
             }
         }
 
-        // Execute une opération comme les calculatrices classiques
+        // Execute une opÃ©ration comme les calculatrices classiques
         private bool calculate()
         {
-            if (selectedVal == 2)
+            if (selectedVal != 22)
             {
                 if (op == '+')
                 {
@@ -102,21 +113,22 @@ namespace ExerciceRecapTP2
                 {
                     val1 = val1 - val2;
                 }
-                else if (op == '×')
+                else if (op == 'Ã—')
                 {
                     val1 = val1 * val2;
                 }
-                else if (op == '÷')
+                else if (op == 'Ã·')
                 {
                     if (val2 == 0)
                     {
-                        MessageBox.Show("Division par 0 impossible");
+                        txtAffichage.Text = "   -- ERREUR MATH --\r\n";
+                        txtAffichage.Text += "âš  Division par zÃ©ro âš \r\n";
+                        txtAffichage.Text += "       impossible       ";
                         return false;
                     }
                     val1 = val1 / val2;
                 }
             }
-            val2 = 0;
             selectedVal = 2;
             txtAffichage.Text = "= " + parseVal(val1);
             return true;
@@ -189,12 +201,18 @@ namespace ExerciceRecapTP2
             updateAffichage();
         }
 
-        //Ajouter une décimale
+        //Ajouter une dÃ©cimale
         private void buttonPoint_Click(object sender, EventArgs e)
         {
             // Ici, on ajoute pas directement de "." ou ","
-            // Mais on indique que la valeur est décimale et plus entière
-            if (decim == -1) decim = 0;
+            // Mais on indique que la valeur est dÃ©cimale et plus entiÃ¨re
+            if(selectedVal == 1)
+            {
+                if (decim1 == -1) decim1 = 0;
+            } else
+            {
+                if (decim2 == -1) decim2 = 0;
+            }
             updateAffichage();
         }
 
@@ -217,35 +235,39 @@ namespace ExerciceRecapTP2
 
         private void buttonMultiplication_Click(object sender, EventArgs e)
         {
-            operation('×');
+            operation('Ã—');
         }
 
         private void buttonDivision_Click(object sender, EventArgs e)
         {
-            operation('÷');
+            operation('Ã·');
         }
 
-        // EFFACER un chiffre avec le même principe que l'ajout
+        // EFFACER un chiffre avec le mÃªme principe que l'ajout
         private void buttonBackspace_Click(object sender, EventArgs e)
         {
             val_type val = (selectedVal == 1 ? val1 : val2);
+            int decim = (selectedVal == 1 ? decim1 : decim2);
             if (decim == -1)
             {
-                (val,_) = Math.DivRem((int) val, 10);
-            } else
+                (val, _) = Math.DivRem((int)val, 10);
+            }
+            else
             {
                 val = val * (val_type)Math.Pow(10, decim - 1);
                 val = Math.Floor(val);
                 val = val * (val_type)Math.Pow(10, -(decim - 1));
                 decim -= 1;
             }
-            if(selectedVal == 1)
-            {
+            if (selectedVal == 1)
                 val1 = val;
-            } else
-            {
+            else
                 val2 = val;
-            }
+
+            if (selectedVal == 1)
+                decim1 = decim;
+            else
+                decim2 = decim;
             updateAffichage();
         }
 
@@ -253,7 +275,8 @@ namespace ExerciceRecapTP2
         {
             val1 = 0;
             val2 = 0;
-            decim = -1;
+            decim1 = -1;
+            decim2 = -1;
             selectedVal = 1;
             updateAffichage();
         }
@@ -268,6 +291,7 @@ namespace ExerciceRecapTP2
             {
                 val2 = val2 / 100;
             }
+            updateAffichage();
         }
 
         private void buttonMPlus_Click(object sender, EventArgs e)
@@ -287,15 +311,47 @@ namespace ExerciceRecapTP2
 
         private void buttonMRecall_Click(object sender, EventArgs e)
         {
-            if(selectedVal == 1)
+            if (selectedVal == 1)
             {
                 val1 = MEMORY;
-            } else
+            }
+            else
             {
                 val2 = MEMORY;
             }
 
             updateAffichage();
+        }
+
+        private void buttonN_Click(object sender, EventArgs e)
+        {
+            appendNumber(int.Parse(((Button)sender).Text.Replace("&","")));
+        }
+
+        private void txtAffichage_KeyDown(object sender, KeyEventArgs e)
+        {
+            String code = e.KeyCode.ToString();
+            
+            //txtAffichage.Text += "\r\n"+code;
+            if (code == "Escape") buttonClear_Click(sender, e);
+            if (code == "NumPad1") appendNumber(1);
+            if (code == "NumPad2") appendNumber(2);
+            if (code == "NumPad3") appendNumber(3);
+            if (code == "NumPad4") appendNumber(4);
+            if (code == "NumPad5") appendNumber(5);
+            if (code == "NumPad6") appendNumber(6);
+            if (code == "NumPad7") appendNumber(7);
+            if (code == "NumPad8") appendNumber(8);
+            if (code == "NumPad9") appendNumber(9);
+            if (code == "NumPad0") appendNumber(0);
+            if (code == "Decimal") buttonPoint_Click(sender, e);
+            if (code == "Divide") buttonDivision_Click(sender, e);
+            if (code == "Multiply") buttonMultiplication_Click(sender, e);
+            if (code == "Add") buttonAddition_Click(sender, e);
+            if (code == "Subtract") buttonSoustraction_Click(sender, e);
+            if (code == "Enter") buttonEgal_Click(sender, e);
+            if (code == "Back") buttonBackspace_Click(sender, e);
+            if (code == "Oem3") buttonPercent_Click(sender, e);
         }
     }
 }
