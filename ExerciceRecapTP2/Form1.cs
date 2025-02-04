@@ -19,23 +19,38 @@ namespace ExerciceRecapTP2
             InitializeComponent();
         }
 
-        private void afficher(val_type val)
+        private String repeatStr(String str, int n)
         {
-            txtAffichage.Text = ((float) val).ToString();
+            if (n <= 0) return "";
+            if (n == 1) return str;
+
+            return str + repeatStr(str, n - 1);
         }
 
+
+        private String parseVal(val_type valRaw)
+        {
+            float val = (float) valRaw;
+            return val.ToString();
+        }
+
+
+        // Afficher les opérations et les valeurs en "FLOAT" pour éviter
+        // les erreurs de virgules comme : 2.3 = 2.30000000004
         private void updateAffichage()
         {
             if (selectedVal == 1)
             {
-                txtAffichage.Text = ((float)val1).ToString();
+                txtAffichage.Text = parseVal(val1);
             }
             else
             {
-                txtAffichage.Text = "  "+((float)val1).ToString() + "\r\n" + op + " " + ((float)val2).ToString();
+                txtAffichage.Text = "  "+ parseVal(val1) + "\r\n" + op + " " + parseVal(val2);
             }
         }
 
+        // Ajoute un chiffre à la suite, sans utiliser de chaines de
+        // caractères
         private void appendNumber(int n)
         {
             val_type val = (selectedVal == 1 ? val1 : val2);
@@ -55,6 +70,9 @@ namespace ExerciceRecapTP2
             updateAffichage();
         }
 
+        // Ajoute un opérateur, et si l'opérateur
+        // a déjà été ajouté une fois, effectue l'ancien
+        // calcul avant de passer au nouveau
         private void operation(char c)
         {
             bool cont = true;
@@ -71,6 +89,7 @@ namespace ExerciceRecapTP2
             }
         }
 
+        // Execute une opération comme les calculatrices classiques
         private bool calculate()
         {
             if (selectedVal == 2)
@@ -99,7 +118,7 @@ namespace ExerciceRecapTP2
             }
             val2 = 0;
             selectedVal = 2;
-            txtAffichage.Text = "= " + val1.ToString();
+            txtAffichage.Text = "= " + parseVal(val1);
             return true;
         }
 
@@ -108,6 +127,7 @@ namespace ExerciceRecapTP2
 
         }
 
+        // ========== BOUTONS 0-9 ==========
         private void buttonN0_Click(object sender, EventArgs e)
         {
             appendNumber(0);
@@ -158,6 +178,7 @@ namespace ExerciceRecapTP2
             appendNumber(9);
         }
 
+        // Opposer la valeur
         private void buttonPlusMinus_Click(object sender, EventArgs e)
         {
             if (selectedVal == 1)
@@ -168,9 +189,13 @@ namespace ExerciceRecapTP2
             updateAffichage();
         }
 
+        //Ajouter une décimale
         private void buttonPoint_Click(object sender, EventArgs e)
         {
+            // Ici, on ajoute pas directement de "." ou ","
+            // Mais on indique que la valeur est décimale et plus entière
             if (decim == -1) decim = 0;
+            updateAffichage();
         }
 
         private void buttonEgal_Click(object sender, EventArgs e)
@@ -179,6 +204,7 @@ namespace ExerciceRecapTP2
             selectedVal = 1;
         }
 
+        // ========== OPERATIONS ==========
         private void buttonAddition_Click(object sender, EventArgs e)
         {
             operation('+');
@@ -199,6 +225,7 @@ namespace ExerciceRecapTP2
             operation('÷');
         }
 
+        // EFFACER un chiffre avec le même principe que l'ajout
         private void buttonBackspace_Click(object sender, EventArgs e)
         {
             val_type val = (selectedVal == 1 ? val1 : val2);
@@ -207,8 +234,10 @@ namespace ExerciceRecapTP2
                 (val,_) = Math.DivRem((int) val, 10);
             } else
             {
-                val = val * (val_type) Math.Pow(10, decim);
-                
+                val = val * (val_type)Math.Pow(10, decim - 1);
+                val = Math.Floor(val);
+                val = val * (val_type)Math.Pow(10, -(decim - 1));
+                decim -= 1;
             }
             if(selectedVal == 1)
             {
